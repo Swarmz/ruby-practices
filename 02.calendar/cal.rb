@@ -1,9 +1,15 @@
 #!/usr/bin/env ruby
 require 'date'
 require 'optparse'
-require 'debug'
 
 def main
+  year, month = get_year_month
+  puts "#{month}月 #{year}".rjust(8 + month.digits.length + year.digits.length)
+  puts "日 月 火 水 木 金 土"
+  print_cal(year, month)
+end
+
+def get_year_month
   year = Date.today.year
   month = Date.today.month
   if ARGV.any?
@@ -12,18 +18,16 @@ def main
     opt.on("-m [MM]", "Specify a month") {|value| month = value.to_i}
     opt.parse!
   end
-  puts "      #{month}月 #{year}"
-  puts "日 月 火 水 木 金 土"
-  print_cal(year, month)
+  [year, month]
 end
 
 def print_cal(year, month)
   first_day = Date.new(year, month, 1)
   last_day = Date.new(year, month, -1)
-  print " ".rjust(first_day.wday*3) # 一行目のpadding
+  print "".rjust(first_day.wday * 3) 
   (first_day..last_day).each do |date|
-    puts "" if date.sunday? && date.day != 1 # 土曜日を表示した後に改行を入れる
-    print date.day < 10 ? "#{date.day}".ljust(3) : "#{date.day}".ljust(3) 
+    print "\n" if date.sunday? && date.day != 1 # 土曜日を表示した後に改行を入れる
+    print "#{date.day}".center(3)
   end
 end
 
