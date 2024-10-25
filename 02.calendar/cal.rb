@@ -4,7 +4,7 @@ require 'optparse'
 
 def main
   year, month = get_year_month
-  puts "#{month}月 #{year}".center(15 + month.digits.length + year.digits.length)
+  puts "#{month}月 #{year}".center(20)
   puts "日 月 火 水 木 金 土"
   print_cal(year, month)
 end
@@ -25,9 +25,9 @@ def print_cal(year, month)
   first_date = Date.new(year, month, 1)
   last_date = Date.new(year, month, -1)
   print "   " * first_date.wday  
-  (first_date..last_date).each do |date|
+  first_date.upto(last_date) do |date|
     print "\n" if date.sunday? && date.day != 1 # 土曜日を表示した後に改行を入れる
-    print "#{date.day}".rjust(2) + " "
+    print date.day.to_s.rjust(2) + " "
   end
 end
 
