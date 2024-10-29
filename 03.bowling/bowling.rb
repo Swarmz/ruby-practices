@@ -1,13 +1,9 @@
-# frozen_string_literal: true
-
-require 'debug'
 score = ARGV[0]
 scores = score.split(',')
 shots = []
 scores.each do |s|
-  if s == 'X' && shots.length < 18
-    shots << 10
-    shots << 0
+  if s == 'X' && shots.length < (2 * 9)
+    shots.push(10, 0)
   elsif s == 'X' # 10フレーム目の場合 例：[10, 10, 10］
     shots << 10
   else
@@ -15,35 +11,31 @@ scores.each do |s|
   end
 end
 
-frames = []
-shots[0..17].each_slice(2) do |s| # 0～9フレーム
-  frames << s
-end
-shots[18..].each_slice(3) do |s| # 10フレーム目は3桁
-  frames << s
-end
+frames = shots[0...18].each_slice(2).to_a # 0～9フレーム
+frames << shots[18..]
 frames.push([0, 0], [0, 0]) # each_consを10フレーム目まで継続させる
 
-point = 0
-
-frames.each_cons(3) do |frame1, frame2, frame3|
-  point += if frame1.equal? frames[-3] # 10フレーム目かどうかのチェック
-             frame1.sum
-           elsif frame1[0] + frame2[0] + frame3[0] == 30 # ターキー
-             30
-           elsif frame1[0] + frame2[0] == 20 # ダブル
-             if frame2.equal? frames[-3] # 9フレーム目がdoubleの場合
-               10 + frame2[0] + frame2[1]
-             else # 通常のdoubleの場合
-               20 + frame3[0]
-             end
-           elsif frame1[0] == 10 # ストライク
-             10 + frame2[0] + frame2[1]
-           elsif frame1[0] + frame1[1] == 10 # スペア
-             frame1.sum + frame2[0]
-           else
-             frame1.sum
-           end
+point = frames.each_cons(3).with_index.sum do |(frame, next_frame, next_next_frame), frame_num|
+  frame.sum +
+    if frame_num == 9 # 10フレーム目かどうかのチェック
+      0
+    elsif frame[0] == 10
+      if next_frame[0] == 10
+        if next_next_frame[0] == 10
+          20
+        elsif frame_num == 8 # 9フレーム目がdoubleの場合
+          next_frame[0..1].sum
+        else
+          10 + next_next_frame[0]
+        end
+      else
+        next_frame[0..1].sum
+      end
+    elsif frame[0..1].sum == 10
+      next_frame[0]
+    else
+      0
+    end
 end
 
 puts point
