@@ -1,15 +1,35 @@
 # frozen_string_literal: true
+require 'optparse'
+require 'debug'
 
 COLUMNS = 3
 
 def main
-  files = find_files
+  files = find_files(ARGV)
   arranged_files = arrange_files(files)
   print_files(arranged_files)
 end
 
-def find_files
-  Dir.new(Dir.pwd).each_child.filter_map { |file| file unless file.start_with?('.') }
+def find_files(args)
+  if args.empty? == false
+    handle_args
+  else
+    Dir.new(Dir.pwd).each_child.filter_map { |file| file unless file.start_with?('.') }
+  end
+end
+
+def handle_args
+  parser = OptionParser.new
+  files = nil
+  parser.on("-a", "Show all files") do
+    files = show_all_files
+  end
+  parser.parse!
+  return files
+end
+
+def show_all_files
+  Dir.new(Dir.pwd).each
 end
 
 def arrange_files(files)
