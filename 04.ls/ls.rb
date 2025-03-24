@@ -21,10 +21,16 @@ end
 def handle_args
   parser = OptionParser.new
   files = nil
-  parser.on("-a", "Show all files") do
-    files = show_all_files
-  end
+    parser.on("-a", "Show all files") do
+      files = show_all_files
+    end
+  begin
   parser.parse!
+  rescue OptionParser::InvalidOption => e
+    puts e
+    puts "Try 'ruby ls.rb --help' for more information."
+  exit
+  end
   return files
 end
 
