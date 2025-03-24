@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require 'optparse'
-require 'debug'
 
 COLUMNS = 3
 
@@ -21,7 +20,7 @@ end
 def handle_args
   parser = OptionParser.new
   files = nil
-    parser.on("-a", "Show all files") do
+    parser.on("-a", "--all", "Show all files, including those that start with .") do
       files = show_all_files
     end
   begin
