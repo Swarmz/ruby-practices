@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'optparse'
+require 'debug'
 
 COLUMNS = 3
 
@@ -31,6 +32,7 @@ def handle_args
     puts "Try 'ruby ls.rb --help' for more information."
     exit
   end
+  files
 end
 
 def show_all_files
