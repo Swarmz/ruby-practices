@@ -26,7 +26,7 @@ def handle_args
     files = show_all_files
   end
   begin
-    parser.parse!
+     return parser.parse!
   rescue OptionParser::InvalidOption => e
     puts e
     puts "Try 'ruby ls.rb --help' for more information."
@@ -36,7 +36,7 @@ def handle_args
 end
 
 def show_all_files
-  Dir.new(Dir.pwd).each
+  Dir.new(Dir.pwd)
 end
 
 def arrange_files(files)
