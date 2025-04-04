@@ -26,7 +26,7 @@ def handle_args
     files = show_all_files
   end
   begin
-     return parser.parse!
+    parser.parse!
   rescue OptionParser::InvalidOption => e
     puts e
     puts "Try 'ruby ls.rb --help' for more information."
