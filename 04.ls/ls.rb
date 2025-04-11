@@ -6,16 +6,13 @@ require 'debug'
 COLUMNS = 3
 
 def main
-  files = if ARGV.empty?
-            Dir.new(Dir.pwd).each_child.filter_map { |file| file unless file.start_with?('.') }
-          else
-            handle_args(files)
-          end
+  files = handle_args
   arranged_files = arrange_files(files)
   print_files(arranged_files)
 end
 
-def handle_args(files)
+def handle_args
+  files = Dir.new(Dir.pwd).each_child.filter_map { |file| file unless file.start_with?('.') }
   parser = OptionParser.new
   parser.on('-a', '--all', 'Show all files, including those that start with .') do
     files = Dir.new(Dir.pwd).sort
