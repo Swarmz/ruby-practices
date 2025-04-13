@@ -6,24 +6,19 @@ require 'debug'
 COLUMNS = 3
 
 def main
-  files = find_files(ARGV)
+  files = Dir.new(Dir.pwd).each_child.filter_map { |file| file unless file.start_with?('.') }.sort
+  files = handle_args(files) unless ARGV.empty?
   arranged_files = arrange_files(files)
   print_files(arranged_files)
 end
 
-def find_files(args)
-  if args.empty? == false
-    handle_args
-  else
-    Dir.new(Dir.pwd).each_child.filter_map { |file| file unless file.start_with?('.') }
-  end
-end
-
-def handle_args
+def handle_args(files)
   parser = OptionParser.new
-  files = nil
   parser.on('-a', '--all', 'Show all files, including those that start with .') do
-    files = show_all_files
+    files = Dir.new(Dir.pwd).sort
+  end
+  parser.on('-r', '--reverse', 'Show files in reverse order') do
+    files = files.sort.reverse
   end
   begin
     parser.parse!
@@ -35,14 +30,10 @@ def handle_args
   files
 end
 
-def show_all_files
-  Dir.new(Dir.pwd)
-end
-
 def arrange_files(files)
   rows = files.count.ceildiv(COLUMNS)
   # transpose メソッドを使用するには、行と列を入れ替えることができるように、1-2個の数字しか持たない配列を空白で埋める
-  split_files = files.sort.each_slice(rows).to_a.tap { |array| array.last.fill(' ', array.last.length, rows - array.last.length) }
+  split_files = files.each_slice(rows).to_a.tap { |array| array.last.fill(' ', array.last.length, rows - array.last.length) }
   split_and_spaced_files = split_files.map do |row|
     max_char_length = row.max_by(&:length).length
     row.map do |file_name|
