@@ -6,7 +6,7 @@ require 'debug'
 COLUMNS = 3
 
 def main
-  files = Dir.new(Dir.pwd).each_child.filter_map { |file| file unless file.start_with?('.') }.sort
+  files = Dir.glob('*')
   files = handle_args(files) unless ARGV.empty?
   arranged_files = arrange_files(files)
   print_files(arranged_files)
@@ -15,10 +15,10 @@ end
 def handle_args(files)
   parser = OptionParser.new
   parser.on('-a', '--all', 'Show all files, including those that start with .') do
-    files = Dir.new(Dir.pwd).sort
+    files = Dir.glob('*', File::FNM_DOTMATCH)
   end
   parser.on('-r', '--reverse', 'Show files in reverse order') do
-    files = files.sort.reverse
+    files = files.reverse
   end
   begin
     parser.parse!
