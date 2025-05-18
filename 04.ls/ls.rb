@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'optparse'
+require 'etc'
 require 'debug'
 
 COLUMNS = 3
@@ -20,6 +21,10 @@ def handle_args(files)
   parser.on('-r', '--reverse', 'Show files in reverse order') do
     files = files.reverse
   end
+  parser.on('-l', '--long', 'Show file information') do
+    long_list(files)
+    exit
+  end
   begin
     parser.parse!
   rescue OptionParser::InvalidOption => e
@@ -28,6 +33,37 @@ def handle_args(files)
     exit
   end
   files
+end
+
+def long_list(files)
+  max_char_length = files.map { |file| File.size(file).to_s.length }.max.to_i
+  total_block_size = files.map { |file| File::Stat.new(file).blocks }.inject(:+)
+  puts "total #{total_block_size / 2}" # lsコマンドで割り当てられるブロック単位は 1024 、File::Statのblocksメソッドは 512 であるので半分に割った
+  files.each do |file|
+    stat = File::Stat.new(file)
+    puts [permissions(stat),
+          stat.nlink,
+          Etc.getpwuid(stat.uid).name,
+          Etc.getgrgid(stat.gid).name,
+          stat.size.to_s.rjust(max_char_length),
+          stat.mtime.strftime('%b %d %R'), file].join(' ')
+  end
+end
+
+def permissions(file)
+  access_rights_numeric = file.mode.to_s(8)[-3..].chars
+  permission_levels = {
+    '0' => '---',
+    '1'	=> '--x',
+    '2'	=> '-w-',
+    '3'	=> '-wx',
+    '4'	=> 'r--',
+    '5'	=> 'r-x',
+    '6'	=> 'rw-',
+    '7'	=> 'rwx'
+  }
+  print '-'
+  access_rights_numeric.map { |x| permission_levels[x] }.join
 end
 
 def arrange_files(files)
