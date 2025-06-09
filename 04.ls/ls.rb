@@ -6,6 +6,27 @@ require 'debug'
 
 COLUMNS = 3
 
+PERMISSION_LEVELS = {
+  '0' => '---',
+  '1'	=> '--x',
+  '2'	=> '-w-',
+  '3'	=> '-wx',
+  '4'	=> 'r--',
+  '5'	=> 'r-x',
+  '6'	=> 'rw-',
+  '7'	=> 'rwx'
+}.freeze
+
+FILE_TYPES = {
+  'fifo' => 'p',
+  'characterSpecial' => 'c',
+  'directory' => 'd',
+  'blockSpecial' => 'b',
+  'file' => '-',
+  'link' => 'l',
+  'socket' => 's'
+}.freeze
+
 def main
   files = Dir.glob('*')
   files = handle_args(files) unless ARGV.empty?
@@ -41,29 +62,13 @@ def long_list(files)
   puts "total #{total_block_size / 2}" # lsコマンドで割り当てられるブロック単位は 1024 、File::Statのblocksメソッドは 512 であるので半分に割った
   files.each do |file|
     stat = File::Stat.new(file)
-    puts [permissions(stat),
+    puts [FILE_TYPES[stat.ftype] + stat.mode.to_s(8)[-3..].chars.map { |x| PERMISSION_LEVELS[x] }.join,
           stat.nlink,
           Etc.getpwuid(stat.uid).name,
           Etc.getgrgid(stat.gid).name,
           stat.size.to_s.rjust(max_char_length),
-          stat.mtime.strftime('%b %d %R'), file].join(' ')
+          stat.mtime.strftime('%b %_d %R'), file].join(' ')
   end
-end
-
-def permissions(file)
-  access_rights_numeric = file.mode.to_s(8)[-3..].chars
-  permission_levels = {
-    '0' => '---',
-    '1'	=> '--x',
-    '2'	=> '-w-',
-    '3'	=> '-wx',
-    '4'	=> 'r--',
-    '5'	=> 'r-x',
-    '6'	=> 'rw-',
-    '7'	=> 'rwx'
-  }
-  print '-'
-  access_rights_numeric.map { |x| permission_levels[x] }.join
 end
 
 def arrange_files(files)
