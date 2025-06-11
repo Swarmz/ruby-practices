@@ -58,7 +58,7 @@ end
 
 def long_list(files)
   max_char_length = files.map { |file| File.size(file).to_s.length }.max.to_i
-  total_block_size = files.map { |file| File::Stat.new(file).blocks }.inject(:+)
+  total_block_size = files.map { |file| File::Stat.new(file).blocks }.sum
   puts "total #{total_block_size / 2}" # lsコマンドで割り当てられるブロック単位は 1024 、File::Statのblocksメソッドは 512 であるので半分に割った
   files.each do |file|
     stat = File::Stat.new(file)
