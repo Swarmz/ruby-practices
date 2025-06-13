@@ -2,10 +2,9 @@
 
 require 'optparse'
 require 'etc'
-require 'debug'
 
+FILES = Dir.glob('*')
 COLUMNS = 3
-
 PERMISSION_LEVELS = {
   '0' => '---',
   '1' => '--x',
@@ -16,7 +15,6 @@ PERMISSION_LEVELS = {
   '6' => 'rw-',
   '7' => 'rwx'
 }.freeze
-
 FILE_TYPES = {
   'fifo' => 'p',
   'characterSpecial' => 'c',
@@ -28,24 +26,18 @@ FILE_TYPES = {
 }.freeze
 
 def main
-  files = Dir.glob('*')
-  files = handle_args(files) unless ARGV.empty?
+  options = create_options
+  files = execute_options(FILES, options)
   arranged_files = arrange_files(files)
   print_files(arranged_files)
 end
 
-def handle_args(files)
+def create_options
   parser = OptionParser.new
-  parser.on('-a', '--all', 'Show all files, including those that start with .') do
-    files = Dir.glob('*', File::FNM_DOTMATCH)
-  end
-  parser.on('-r', '--reverse', 'Show files in reverse order') do
-    files = files.reverse
-  end
-  parser.on('-l', '--long', 'Show file information') do
-    long_list(files)
-    exit
-  end
+  options = {}
+  parser.on('-a', '--all', 'Show all files, including those that start with .') { |opt| options[:all] = opt }
+  parser.on('-r', '--reverse', 'Show files in reverse order') { |opt| options[:reverse] = opt }
+  parser.on('-l', '--long', 'Show file information') { |opt| options[:long] = opt }
   begin
     parser.parse!
   rescue OptionParser::InvalidOption => e
@@ -53,6 +45,13 @@ def handle_args(files)
     puts "Try 'ruby ls.rb --help' for more information."
     exit
   end
+  options
+end
+
+def execute_options(files, options)
+  files = Dir.glob('*', File::FNM_DOTMATCH) if options[:all]
+  files = files.reverse if options[:reverse]
+  files = long_list(files) if options[:long]
   files
 end
 
@@ -69,6 +68,7 @@ def long_list(files)
           stat.size.to_s.rjust(max_char_length),
           stat.mtime.strftime('%b %_d %R'), file].join(' ')
   end
+  exit
 end
 
 def arrange_files(files)
