@@ -1,25 +1,43 @@
 # frozen_string_literal: true
 
 require 'optparse'
-require 'debug'
+require 'etc'
 
+FILES = Dir.glob('*')
 COLUMNS = 3
+PERMISSION_LEVELS = {
+  '0' => '---',
+  '1' => '--x',
+  '2' => '-w-',
+  '3' => '-wx',
+  '4' => 'r--',
+  '5' => 'r-x',
+  '6' => 'rw-',
+  '7' => 'rwx'
+}.freeze
+FILE_TYPES = {
+  'fifo' => 'p',
+  'characterSpecial' => 'c',
+  'directory' => 'd',
+  'blockSpecial' => 'b',
+  'file' => '-',
+  'link' => 'l',
+  'socket' => 's'
+}.freeze
 
 def main
-  files = Dir.new(Dir.pwd).each_child.filter_map { |file| file unless file.start_with?('.') }.sort
-  files = handle_args(files) unless ARGV.empty?
+  options = create_options
+  files = execute_options(FILES, options)
   arranged_files = arrange_files(files)
   print_files(arranged_files)
 end
 
-def handle_args(files)
+def create_options
   parser = OptionParser.new
-  parser.on('-a', '--all', 'Show all files, including those that start with .') do
-    files = Dir.new(Dir.pwd).sort
-  end
-  parser.on('-r', '--reverse', 'Show files in reverse order') do
-    files = files.sort.reverse
-  end
+  options = {}
+  parser.on('-a', '--all', 'Show all files, including those that start with .') { |opt| options[:all] = opt }
+  parser.on('-r', '--reverse', 'Show files in reverse order') { |opt| options[:reverse] = opt }
+  parser.on('-l', '--long', 'Show file information') { |opt| options[:long] = opt }
   begin
     parser.parse!
   rescue OptionParser::InvalidOption => e
@@ -27,7 +45,30 @@ def handle_args(files)
     puts "Try 'ruby ls.rb --help' for more information."
     exit
   end
+  options
+end
+
+def execute_options(files, options)
+  files = Dir.glob('*', File::FNM_DOTMATCH) if options[:all]
+  files = files.reverse if options[:reverse]
+  files = long_list(files) if options[:long]
   files
+end
+
+def long_list(files)
+  max_char_length = files.map { |file| File.size(file).to_s.length }.max.to_i
+  total_block_size = files.map { |file| File::Stat.new(file).blocks }.sum
+  puts "total #{total_block_size / 2}" # lsコマンドで割り当てられるブロック単位は 1024 、File::Statのblocksメソッドは 512 であるので半分に割った
+  files.each do |file|
+    stat = File::Stat.new(file)
+    puts [FILE_TYPES[stat.ftype] + stat.mode.to_s(8)[-3..].chars.map { |x| PERMISSION_LEVELS[x] }.join,
+          stat.nlink,
+          Etc.getpwuid(stat.uid).name,
+          Etc.getgrgid(stat.gid).name,
+          stat.size.to_s.rjust(max_char_length),
+          stat.mtime.strftime('%b %_d %R'), file].join(' ')
+  end
+  exit
 end
 
 def arrange_files(files)
