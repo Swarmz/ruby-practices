@@ -5,14 +5,15 @@ require 'etc'
 
 def main
   options = parse_options
+  # 少なくとも1つが選択されるまでは、デフォルトで全てのオプションが有効
   options.each_key { |k| options[k] = true } if options.values.all? { |v| v == false }
 
   input = read_input
   data = input.map { |file| build_data(file[:content], name: file[:name], **options) }
-
   data = get_total_data(data) if data.size > 1
 
-  formatted_data = format_data(data)
+  lengths = get_value_lengths(data)
+  formatted_data = format_data(data, lengths)
   print_data(formatted_data)
 end
 
@@ -42,41 +43,52 @@ def read_input
   end
 end
 
-def build_data(input, name: nil, newline: false, wordcount: false, bytesize: false)
+def build_data(input, newline: false, wordcount: false, bytesize: false, name: nil)
   data = {}
-  data[:name] = name
   data[:newline] = input.scan(/\n/).count if newline
   data[:wordcount] = input.split.size if wordcount
   data[:bytesize] = input.bytesize if bytesize
+  data[:name] = name
   data
 end
 
 def get_total_data(data)
-  newline_total = data.map { |v| v[:newline] }.sum
-  wordcount_total = data.map { |v| v[:wordcount] }.sum
-  bytesize_total = data.map { |v| v[:bytesize] }.sum
-  data << { newline: newline_total, wordcount: wordcount_total, bytesize: bytesize_total, name: 'total' }
+  totals = Hash.new(0)
+  data.each do |hash|
+    hash.each do |key, value|
+      totals[key] += value.to_i unless key == :name
+    end
+  end
+
+  data << totals.merge(name: 'total')
 end
 
-def format_data(data)
-  line_size = data.map { |hash| hash[:newline].to_s.length }.max
-  word_size = data.map { |hash| hash[:wordcount].to_s.length }.max
-  byte_size = data.map { |hash| hash[:bytesize].to_s.length }.max
+def get_value_lengths(data)
+  lengths = Hash.new(0)
+  data.each do |row|
+    row.each do |key, value|
+      lengths[key] = [lengths[key], value.to_s.length].max unless key == :name
+    end
+  end
 
-  data.map do |row|
-    line_str  = row[:newline].to_s.rjust(line_size)
-    word_str  = row[:wordcount].to_s.rjust(word_size)
-    byte_str  = row[:bytesize].to_s.rjust(byte_size)
-    name_str  = row[:name].to_s
+  lengths
+end
 
-    # nil に対して `to_s` を呼ぶと空文字列 "" になり、`join(' ')` で不要な空白が生成される。
-    # そのため `reject { |str| str.empty? }` によってこの挙動を防いでいる。
-    [line_str, word_str, byte_str, name_str].reject(&:empty?).join(' ')
+def format_data(data, lengths)
+  data.map do |hash|
+    hash.map do |key, value|
+      if lengths.key?(key)
+        value.to_s.rjust(lengths[key])
+      # :name には `.rjust` を使わない
+      else
+        value.to_s
+      end
+    end.join(' ')
   end
 end
 
 def print_data(formatted_data)
-  formatted_data.each { |data| puts data }
+  formatted_data.each { |row| puts row }
 end
 
 main
