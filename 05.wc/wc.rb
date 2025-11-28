@@ -12,8 +12,7 @@ def main
   file_stats = input.map { |file| build_file_stats(file[:content], name: file[:name], **options) }
   file_stats = build_file_stats_total(file_stats) if file_stats.size > 1
 
-  widths = column_widths(file_stats)
-  formatted_stats = format_file_stats(file_stats, widths)
+  formatted_stats = format_file_stats(file_stats)
   print_file_stats(formatted_stats)
 end
 
@@ -63,27 +62,20 @@ def build_file_stats_total(file_stats)
   file_stats << totals.merge(name: 'total')
 end
 
-def column_widths(file_stats)
-  widths = Hash.new(0)
-  file_stats.each do |stats|
-    stats.each do |key, value|
-      widths[key] = [widths[key], value.to_s.length].max unless key == :name
-    end
-  end
-  widths
-end
-
-def format_file_stats(file_stats, widths)
+def format_file_stats(file_stats)
   file_stats.map do |stats|
     stats.map do |key, value|
-      if widths.key?(key)
-        value.to_s.rjust(widths[key])
-      # :name には `.rjust` を使わない
+      if key == :name
+        value
       else
-        value.to_s
+        value.to_s.rjust(column_widths(file_stats, key))
       end
     end.join(' ')
   end
+end
+
+def column_widths(file_stats, key)
+  file_stats.map { |stats| stats[key].to_s.length }.max
 end
 
 def print_file_stats(formatted_stats)
