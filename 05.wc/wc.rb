@@ -6,11 +6,11 @@ require 'etc'
 def main
   options = parse_options
   # 少なくとも1つが選択されるまでは、デフォルトで全てのオプションが有効
-  options.each_key { |k| options[k] = true } if options.values.all? { |v| v == false }
+  options.each_key { |k| options[k] = true } if options.values.all? { !it }
 
   input = read_input
   file_stats = input.map { |file| build_file_stats(file[:content], name: file[:name], **options) }
-  file_stats = build_file_stats_total(file_stats) if file_stats.size > 1
+  build_file_stats_total(file_stats) if file_stats.size > 1
 
   formatted_stats = format_file_stats(file_stats)
   print_file_stats(formatted_stats)
@@ -53,10 +53,9 @@ end
 
 def build_file_stats_total(file_stats)
   totals = Hash.new(0)
-  file_stats.each do |stats|
-    stats.each do |key, value|
-      totals[key] += value.to_i unless key == :name
-    end
+
+  file_stats.first.each_key do |key|
+    totals[key] = file_stats.sum { |stats| stats[key].to_i } unless key == :name
   end
 
   file_stats << totals.merge(name: 'total')
