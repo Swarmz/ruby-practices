@@ -9,20 +9,20 @@ def main
   options.each_key { |k| options[k] = true } if options.values.all? { |v| v == false }
 
   input = read_input
-  data = input.map { |file| build_data(file[:content], name: file[:name], **options) }
-  data = get_total_data(data) if data.size > 1
+  file_stats = input.map { |file| build_file_stats(file[:content], name: file[:name], **options) }
+  file_stats = build_file_stats_total(file_stats) if file_stats.size > 1
 
-  lengths = get_value_lengths(data)
-  formatted_data = format_data(data, lengths)
-  print_data(formatted_data)
+  widths = column_widths(file_stats)
+  formatted_stats = format_file_stats(file_stats, widths)
+  print_file_stats(formatted_stats)
 end
 
 def parse_options
-  options = { newline: false, wordcount: false, bytesize: false }
+  options = { line_count: false, word_count: false, byte_size: false }
   parser = OptionParser.new do |opts|
-    opts.on('-l', '--lines', 'print the newline counts') { |opt| options[:newline] = opt }
-    opts.on('-w', '--words', 'print the word counts') { |opt| options[:wordcount] = opt }
-    opts.on('-c', '--bytes', 'print the byte counts') { |opt| options[:bytesize] = opt }
+    opts.on('-l', '--lines', 'print the line counts') { |opt| options[:line_count] = opt }
+    opts.on('-w', '--words', 'print the word counts') { |opt| options[:word_count] = opt }
+    opts.on('-c', '--bytes', 'print the byte counts') { |opt| options[:byte_size] = opt }
   end
   parser.parse!(ARGV)
   options
@@ -30,7 +30,7 @@ end
 
 def read_input
   # STDIN を読み込む場合でも常にハッシュの配列を返す。
-  # そうすることで build_data メソッドが一貫して同じ方法で反復処理できる。
+  # そうすることで build_file_stats メソッドが一貫して同じ方法で反復処理できる。
   if ARGV.length.positive?
     ARGV.map do |file|
       {
@@ -43,42 +43,41 @@ def read_input
   end
 end
 
-def build_data(input, newline: false, wordcount: false, bytesize: false, name: nil)
-  data = {}
-  data[:newline] = input.scan(/\n/).count if newline
-  data[:wordcount] = input.split.size if wordcount
-  data[:bytesize] = input.bytesize if bytesize
-  data[:name] = name
-  data
+def build_file_stats(input, line_count: false, word_count: false, byte_size: false, name: nil)
+  stats = {}
+  stats[:line_count] = input.scan(/\n/).count if line_count
+  stats[:word_count] = input.split.size if word_count
+  stats[:byte_size] = input.bytesize if byte_size
+  stats[:name] = name
+  stats
 end
 
-def get_total_data(data)
+def build_file_stats_total(file_stats)
   totals = Hash.new(0)
-  data.each do |hash|
-    hash.each do |key, value|
+  file_stats.each do |stats|
+    stats.each do |key, value|
       totals[key] += value.to_i unless key == :name
     end
   end
 
-  data << totals.merge(name: 'total')
+  file_stats << totals.merge(name: 'total')
 end
 
-def get_value_lengths(data)
-  lengths = Hash.new(0)
-  data.each do |row|
-    row.each do |key, value|
-      lengths[key] = [lengths[key], value.to_s.length].max unless key == :name
+def column_widths(file_stats)
+  widths = Hash.new(0)
+  file_stats.each do |stats|
+    stats.each do |key, value|
+      widths[key] = [widths[key], value.to_s.length].max unless key == :name
     end
   end
-
-  lengths
+  widths
 end
 
-def format_data(data, lengths)
-  data.map do |hash|
-    hash.map do |key, value|
-      if lengths.key?(key)
-        value.to_s.rjust(lengths[key])
+def format_file_stats(file_stats, widths)
+  file_stats.map do |stats|
+    stats.map do |key, value|
+      if widths.key?(key)
+        value.to_s.rjust(widths[key])
       # :name には `.rjust` を使わない
       else
         value.to_s
@@ -87,8 +86,8 @@ def format_data(data, lengths)
   end
 end
 
-def print_data(formatted_data)
-  formatted_data.each { |row| puts row }
+def print_file_stats(formatted_stats)
+  formatted_stats.each { |stats| puts stats }
 end
 
 main
