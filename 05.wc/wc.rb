@@ -10,7 +10,7 @@ def main
 
   input = read_input
   file_stats = input.map { |file| build_file_stats(file[:content], name: file[:name], **options) }
-  build_file_stats_total(file_stats) if file_stats.size > 1
+  file_stats = build_file_stats_total(file_stats) if file_stats.size > 1
 
   formatted_stats = format_file_stats(file_stats)
   print_file_stats(formatted_stats)
@@ -52,13 +52,14 @@ def build_file_stats(input, line_count: false, word_count: false, byte_size: fal
 end
 
 def build_file_stats_total(file_stats)
-  totals = Hash.new(0)
+  total = Hash.new(0)
 
   file_stats.first.each_key do |key|
-    totals[key] = file_stats.sum { |stats| stats[key] } unless key == :name
+    total[key] = file_stats.sum { |stats| stats[key] } unless key == :name
   end
 
-  file_stats << totals.merge(name: 'total')
+  total_row = total.merge(name: 'total')
+  file_stats + [total_row]
 end
 
 def format_file_stats(file_stats)
