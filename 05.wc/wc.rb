@@ -55,7 +55,7 @@ def build_file_stats_total(file_stats)
   totals = Hash.new(0)
 
   file_stats.first.each_key do |key|
-    totals[key] = file_stats.sum { |stats| stats[key].to_i } unless key == :name
+    totals[key] = file_stats.sum { |stats| stats[key] } unless key == :name
   end
 
   file_stats << totals.merge(name: 'total')
