@@ -21,13 +21,7 @@ class Game
   end
 
   def calculate_total_score
-    total = 0
-
-    @frames.each do |frame|
-      total += frame.score
-    end
-
-    total
+    @frames.sum(&:score)
   end
 end
 
