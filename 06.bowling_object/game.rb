@@ -7,6 +7,12 @@ class Game
     @frames = parse_score_sheet(score_sheet)
   end
 
+  def calculate_total_score
+    @frames.sum(&:score)
+  end
+
+  private
+
   def parse_score_sheet(score_sheet)
     shots = score_sheet.split(',')
     frames = []
@@ -18,10 +24,6 @@ class Game
     end
 
     frames
-  end
-
-  def calculate_total_score
-    @frames.sum(&:score)
   end
 end
 
