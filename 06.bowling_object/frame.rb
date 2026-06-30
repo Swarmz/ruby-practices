@@ -10,12 +10,22 @@ class Frame
   end
 
   def score
-    if @first_shot.score == 10
+    if strike?
       return 10 + @second_shot.score + @third_shot.score
-    elsif @first_shot.score + @second_shot.score == 10
+    elsif spare?
       return 10 + @third_shot.score
     end
 
     @first_shot.score + @second_shot.score
+  end
+
+  private
+
+  def spare?
+    @first_shot.score + @second_shot.score == 10
+  end
+
+  def strike?
+    @first_shot.score == 10
   end
 end
