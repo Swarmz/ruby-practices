@@ -10,19 +10,21 @@ class Frame
   end
 
   def score
-    if strike?
-      return 10 + @second_shot.score + @third_shot.score
-    elsif spare?
-      return 10 + @third_shot.score
+    if strike? || spare?
+      [@first_shot, @second_shot, @third_shot].sum(&:score)
+    else
+      pin_count
     end
-
-    @first_shot.score + @second_shot.score
   end
 
   private
 
+  def pin_count
+    @first_shot.score + @second_shot.score
+  end
+
   def spare?
-    @first_shot.score + @second_shot.score == 10
+    pin_count == 10 && !strike?
   end
 
   def strike?
