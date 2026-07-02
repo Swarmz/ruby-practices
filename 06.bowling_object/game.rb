@@ -19,7 +19,7 @@ class Game
     shot_index = 0
 
     while frames.size < 10
-      frames << Frame.new(shots[shot_index], shots[shot_index + 1], shots[shot_index + 2])
+      frames << Frame.new(*shots[shot_index, 3])
       shot_index += (shots[shot_index] == 'X' ? 1 : 2)
     end
 
