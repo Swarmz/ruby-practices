@@ -20,7 +20,7 @@ class Frame
   private
 
   def pin_count
-    @first_shot.score + @second_shot.score
+    [@first_shot, @second_shot].sum(&:score)
   end
 
   def spare?
