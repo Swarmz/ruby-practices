@@ -90,25 +90,6 @@ class ListFormatterTest < Minitest::Test
     assert_equal expected, formatter.output
   end
 
-  def test_long_list_byte_size_has_adjusted_spacing
-    list = [
-      fake_file(name: 'a', byte_size: 1),
-      fake_file(name: 'b', byte_size: 1000)
-    ]
-
-    options = { long: true }
-
-    formatter = ListFormatter.new(list, options)
-
-    expected = <<~TEXT.chomp
-      total 8
-      -rw-r--r-- 1 test TEST    1 Jul 14 12:00 a
-      -rw-r--r-- 1 test TEST 1000 Jul 14 12:00 b
-    TEXT
-
-    assert_equal expected, formatter.output
-  end
-
   def test_long_list_displays_total_block_size
     list = [
       fake_file(name: 'a', block_size: 8),
@@ -123,6 +104,27 @@ class ListFormatterTest < Minitest::Test
       total 12
       -rw-r--r-- 1 test TEST 100 Jul 14 12:00 a
       -rw-r--r-- 1 test TEST 100 Jul 14 12:00 b
+    TEXT
+
+    assert_equal expected, formatter.output
+  end
+
+  def test_long_list_column_alignment
+    list = [
+      fake_file(user_id_name: 'gavin', group_id_name: 'gavin', byte_size: 1, links: 5),
+      fake_file(user_id_name: 'root', group_id_name: 'rootgroup', byte_size: 10, links: 50),
+      fake_file(user_id_name: 'verylongusername', group_id_name: 'x', byte_size: 100, links: 500)
+    ]
+
+    options = { long: true }
+
+    formatter = ListFormatter.new(list, options)
+
+    expected = <<~TEXT.chomp
+      total 12
+      -rw-r--r--   5 gavin            gavin       1 Jul 14 12:00 default
+      -rw-r--r--  50 root             rootgroup  10 Jul 14 12:00 default
+      -rw-r--r-- 500 verylongusername x         100 Jul 14 12:00 default
     TEXT
 
     assert_equal expected, formatter.output
