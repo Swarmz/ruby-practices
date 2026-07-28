@@ -27,7 +27,7 @@ class ListFormatterTest < Minitest::Test
         user_id_name: 'test',
         group_id_name: 'TEST',
         byte_size: 100,
-        edited_at: 'Jul 14 12:00',
+        edited_at: Time.new(2026, 7, 14, 12, 0, 0),
         block_size: 8
       }.merge(attrs)
     )
@@ -63,7 +63,7 @@ class ListFormatterTest < Minitest::Test
     assert_equal expected, formatter.output
   end
 
-  def test_long_list_prints_in_order
+  def test_long_list_prints_columns_in_order
     list = [
       fake_file(
         name: 'testing.txt',
@@ -73,7 +73,7 @@ class ListFormatterTest < Minitest::Test
         user_id_name: 'test_user',
         group_id_name: 'test_group',
         byte_size: 100,
-        edited_at: 'Jul 1 12:00',
+        edited_at: Time.new(2026, 7, 14, 12, 0, 0),
         block_size: 16
       )
     ]
@@ -84,7 +84,7 @@ class ListFormatterTest < Minitest::Test
 
     expected = <<~TEXT.chomp
       total 8
-      -rw-rw-rw- 1 test_user test_group 100 Jul 1 12:00 testing.txt
+      -rw-rw-rw- 1 test_user test_group 100 Jul 14 12:00 testing.txt
     TEXT
 
     assert_equal expected, formatter.output

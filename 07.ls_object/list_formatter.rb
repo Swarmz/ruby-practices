@@ -44,7 +44,7 @@ class ListFormatter
         file.user_id_name.ljust(user_width),
         file.group_id_name.ljust(group_width),
         file.byte_size.to_s.rjust(byte_width),
-        file.edited_at,
+        file.edited_at.strftime('%b %_d %R'),
         file.name
       ].join(' ')
     end

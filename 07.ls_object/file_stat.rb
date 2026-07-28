@@ -60,7 +60,7 @@ class FileStat
   end
 
   def edited_at
-    @stat.mtime.strftime('%b %_d %R')
+    @stat.mtime
   end
 
   def block_size
