@@ -70,6 +70,6 @@ class FileStat
   private
 
   def build_stat
-    File::Stat.new(@path)
+    File.lstat(@path)
   end
 end
