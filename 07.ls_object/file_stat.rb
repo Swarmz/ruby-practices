@@ -3,27 +3,6 @@
 require 'etc'
 
 class FileStat
-  PERMISSION_LEVELS = {
-    '0' => '---',
-    '1' => '--x',
-    '2' => '-w-',
-    '3' => '-wx',
-    '4' => 'r--',
-    '5' => 'r-x',
-    '6' => 'rw-',
-    '7' => 'rwx'
-  }.freeze
-
-  FILE_TYPES = {
-    'fifo' => 'p',
-    'characterSpecial' => 'c',
-    'directory' => 'd',
-    'blockSpecial' => 'b',
-    'file' => '-',
-    'link' => 'l',
-    'socket' => 's'
-  }.freeze
-
   attr_reader :path
 
   def initialize(path)
@@ -36,23 +15,23 @@ class FileStat
   end
 
   def file_type
-    FILE_TYPES[@stat.ftype]
+    @stat.ftype
   end
 
   def permissions
-    @stat.mode.to_s(8)[-3..].chars.map { |x| PERMISSION_LEVELS[x] }.join
+    @stat.mode
   end
 
   def links
     @stat.nlink
   end
 
-  def user_id_name
-    Etc.getpwuid(@stat.uid).name
+  def user
+    Etc.getpwuid(@stat.uid)
   end
 
-  def group_id_name
-    Etc.getgrgid(@stat.gid).name
+  def group
+    Etc.getgrgid(@stat.gid)
   end
 
   def byte_size

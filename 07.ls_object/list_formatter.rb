@@ -3,6 +3,27 @@
 class ListFormatter
   COLUMNS = 3
 
+  FILE_TYPES = {
+    'fifo' => 'p',
+    'characterSpecial' => 'c',
+    'directory' => 'd',
+    'blockSpecial' => 'b',
+    'file' => '-',
+    'link' => 'l',
+    'socket' => 's'
+  }.freeze
+
+  PERMISSION_LEVELS = {
+    '0' => '---',
+    '1' => '--x',
+    '2' => '-w-',
+    '3' => '-wx',
+    '4' => 'r--',
+    '5' => 'r-x',
+    '6' => 'rw-',
+    '7' => 'rwx'
+  }.freeze
+
   def initialize(list, options)
     @list = list
     @options = options
@@ -16,7 +37,7 @@ class ListFormatter
 
   def format_short
     row_count = @list.count.ceildiv(COLUMNS)
-    name_width = column_width(:name)
+    name_width = @list.map { |file| file.name.length }.max
 
     columns = @list
               .map { |file| file.name.ljust(name_width + 2) }
@@ -32,17 +53,17 @@ class ListFormatter
 
   def format_long
     total_block_size = @list.sum(&:block_size)
-    links_width = column_width(:links)
-    user_width = column_width(:user_id_name)
-    group_width = column_width(:group_id_name)
-    byte_width = column_width(:byte_size)
+    links_width = @list.map { |file| file.links.to_s.length }.max
+    user_width = @list.map { |file| file.user.name.length }.max
+    group_width = @list.map { |file| file.group.name.length }.max
+    byte_width = @list.map { |file| file.byte_size.to_s.length }.max
 
     long_lines = @list.map do |file|
       [
-        "#{file.file_type}#{file.permissions}",
+        "#{file_type_character(file.file_type)}#{permission_string(file.permissions)}",
         file.links.to_s.rjust(links_width),
-        file.user_id_name.ljust(user_width),
-        file.group_id_name.ljust(group_width),
+        file.user.name.ljust(user_width),
+        file.group.name.ljust(group_width),
         file.byte_size.to_s.rjust(byte_width),
         file.edited_at.strftime('%b %_d %R'),
         file.name
@@ -52,7 +73,11 @@ class ListFormatter
     ["total #{total_block_size / 2}", *long_lines].join("\n")
   end
 
-  def column_width(attribute)
-    @list.map { |file| file.public_send(attribute).to_s.length }.max
+  def permission_string(mode)
+    mode.to_s(8)[-3..].chars.map { |x| PERMISSION_LEVELS[x] }.join
+  end
+
+  def file_type_character(ftype)
+    FILE_TYPES[ftype]
   end
 end

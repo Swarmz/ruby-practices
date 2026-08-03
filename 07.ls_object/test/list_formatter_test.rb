@@ -9,8 +9,8 @@ class ListFormatterTest < Minitest::Test
     :file_type,
     :permissions,
     :links,
-    :user_id_name,
-    :group_id_name,
+    :user,
+    :group,
     :byte_size,
     :edited_at,
     :block_size,
@@ -21,11 +21,11 @@ class ListFormatterTest < Minitest::Test
     FakeFile.new(
       {
         name: 'default',
-        file_type: '-',
-        permissions: 'rw-r--r--',
+        file_type: 'file',
+        permissions: 0o100644,
         links: 1,
-        user_id_name: 'test',
-        group_id_name: 'TEST',
+        user: Etc::Passwd.new(name: 'test'),
+        group: Etc::Group.new(name: 'TEST'),
         byte_size: 100,
         edited_at: Time.new(2026, 7, 14, 12, 0, 0),
         block_size: 8
@@ -67,11 +67,11 @@ class ListFormatterTest < Minitest::Test
     list = [
       fake_file(
         name: 'testing.txt',
-        file_type: '-',
-        permissions: 'rw-rw-rw-',
+        file_type: 'file',
+        permissions: 0o110666,
         links: 1,
-        user_id_name: 'test_user',
-        group_id_name: 'test_group',
+        user: Etc::Passwd.new(name: 'test'),
+        group: Etc::Group.new(name: 'TEST'),
         byte_size: 100,
         edited_at: Time.new(2026, 7, 14, 12, 0, 0),
         block_size: 16
@@ -84,7 +84,7 @@ class ListFormatterTest < Minitest::Test
 
     expected = <<~TEXT.chomp
       total 8
-      -rw-rw-rw- 1 test_user test_group 100 Jul 14 12:00 testing.txt
+      -rw-rw-rw- 1 test TEST 100 Jul 14 12:00 testing.txt
     TEXT
 
     assert_equal expected, formatter.output
@@ -111,9 +111,9 @@ class ListFormatterTest < Minitest::Test
 
   def test_long_list_column_alignment
     list = [
-      fake_file(user_id_name: 'gavin', group_id_name: 'gavin', byte_size: 1, links: 5),
-      fake_file(user_id_name: 'root', group_id_name: 'rootgroup', byte_size: 10, links: 50),
-      fake_file(user_id_name: 'verylongusername', group_id_name: 'x', byte_size: 100, links: 500)
+      fake_file(user: Etc::Passwd.new(name: 'gavin'), group: Etc::Group.new(name: 'gavin'), byte_size: 1, links: 5),
+      fake_file(user: Etc::Passwd.new(name: 'root'), group: Etc::Group.new(name: 'rootgroup'), byte_size: 10, links: 50),
+      fake_file(user: Etc::Passwd.new(name: 'verylongusername'), group: Etc::Group.new(name: 'x'), byte_size: 100, links: 500)
     ]
 
     options = { long: true }
