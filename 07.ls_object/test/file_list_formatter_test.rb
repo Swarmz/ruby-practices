@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require 'minitest/autorun'
-require_relative '../list_formatter'
+require_relative '../file_list_formatter'
 
-class ListFormatterTest < Minitest::Test
+class FileListFormatterTest < Minitest::Test
   FakeFile = Struct.new(
     :name,
     :file_type,
@@ -42,7 +42,7 @@ class ListFormatterTest < Minitest::Test
 
     options = {}
 
-    formatter = ListFormatter.new(list, options)
+    formatter = FileListFormatter.new(list, options)
 
     expected = 'file1  file2  file3  '
 
@@ -56,7 +56,7 @@ class ListFormatterTest < Minitest::Test
 
     options = {}
 
-    formatter = ListFormatter.new(list, options)
+    formatter = FileListFormatter.new(list, options)
 
     expected = "file1  file4  file7  \nfile2  file5  file8  \nfile3  file6  file9  "
 
@@ -80,7 +80,7 @@ class ListFormatterTest < Minitest::Test
 
     options = { long: true }
 
-    formatter = ListFormatter.new(list, options)
+    formatter = FileListFormatter.new(list, options)
 
     expected = <<~TEXT.chomp
       total 8
@@ -98,7 +98,7 @@ class ListFormatterTest < Minitest::Test
 
     options = { long: true }
 
-    formatter = ListFormatter.new(list, options)
+    formatter = FileListFormatter.new(list, options)
 
     expected = <<~TEXT.chomp
       total 12
@@ -118,7 +118,7 @@ class ListFormatterTest < Minitest::Test
 
     options = { long: true }
 
-    formatter = ListFormatter.new(list, options)
+    formatter = FileListFormatter.new(list, options)
 
     expected = <<~TEXT.chomp
       total 12

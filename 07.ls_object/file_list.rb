@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'file_stat'
-require_relative 'list_formatter'
+require_relative 'file_list_formatter'
 
 class FileList
   include Enumerable

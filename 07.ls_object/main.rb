@@ -3,7 +3,7 @@
 
 require 'optparse'
 require_relative 'file_list'
-require_relative 'list_formatter'
+require_relative 'file_list_formatter'
 
 def create_options
   parser = OptionParser.new
@@ -18,7 +18,7 @@ end
 if __FILE__ == $PROGRAM_NAME
   options = create_options
   file_list = FileList.new(options)
-  formatter = ListFormatter.new(file_list, options)
+  formatter = FileListFormatter.new(file_list, options)
 
   puts formatter.output
 end
