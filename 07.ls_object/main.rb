@@ -17,8 +17,8 @@ end
 
 if __FILE__ == $PROGRAM_NAME
   options = create_options
-  list = FileList.new(options)
-  formatter = ListFormatter.new(list, options)
+  file_list = FileList.new(options)
+  formatter = ListFormatter.new(file_list, options)
 
   puts formatter.output
 end
